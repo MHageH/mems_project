@@ -7,10 +7,11 @@
 \contentsline {subsection}{\numberline {3.3}Architecture de l'amplificateur diff\'erentiel}{2}{subsection.3.3}
 \contentsline {subsection}{\numberline {3.4}Convertisseur Analogique-Num\'erique en VHDL-AMS}{3}{subsection.3.4}
 \contentsline {subsubsection}{\numberline {3.4.1}Convertiseur Analogique-Num\'erique 1-bit}{3}{subsubsection.3.4.1}
-\contentsline {subsection}{\numberline {3.5}Logique de commande}{7}{subsection.3.5}
-\contentsline {section}{\numberline {4}Conclusion}{8}{section.4}
-\contentsline {section}{\numberline {5}Annexes}{9}{section.5}
-\contentsline {subsection}{\numberline {5.1}Code complet des blocs VHDL-AMS}{9}{subsection.5.1}
-\contentsline {subsubsection}{\numberline {5.1.1}Convertisseur nbitsADC 6-bits }{9}{subsubsection.5.1.1}
-\contentsline {subsubsection}{\numberline {5.1.2}Convertiseur 1bit clockadc}{10}{subsubsection.5.1.2}
-\contentsline {section}{R\'ef\'erences}{11}{lstnumber.-9.34}
+\contentsline {subsubsection}{\numberline {3.4.2}Convertiseur Analogique-Num\'erique 6-bits}{5}{subsubsection.3.4.2}
+\contentsline {subsection}{\numberline {3.5}Logique de commande}{8}{subsection.3.5}
+\contentsline {section}{\numberline {4}Conclusion}{9}{section.4}
+\contentsline {section}{\numberline {5}Annexes}{10}{section.5}
+\contentsline {subsection}{\numberline {5.1}Code complet des blocs VHDL-AMS}{10}{subsection.5.1}
+\contentsline {subsubsection}{\numberline {5.1.1}Convertisseur nbitsADC 6-bits }{10}{subsubsection.5.1.1}
+\contentsline {subsubsection}{\numberline {5.1.2}Convertiseur 1bit clockadc}{11}{subsubsection.5.1.2}
+\contentsline {section}{R\'ef\'erences}{12}{lstnumber.-9.34}

@@ -119,12 +119,15 @@ du mod\`ele pour caract\'eriser ses performances vis-\`a-vis du cahier des charg
 \end{center}
 \end{figure}
 
+Utilisation des bibilioth\`eques standards pour les \'el\'ements AMS
 \begin{lstlisting}[language=VHDL, belowskip=-0.5 \baselineskip]
 library ieee, std;
 use ieee.std_logic_1164.all;
 use ieee.electrical_systems.all;
 \end{lstlisting}
 
+D\'efinitions des terminaux principaux : l'alimentation ainsi que
+le signal de la clock est \`a convertir vers une version digitale.
 \begin{lstlisting}[language=VHDL, belowskip=-0.5 \baselineskip]
 entity clockadc is
 	port (
@@ -135,6 +138,13 @@ entity clockadc is
 end clockadc;
 \end{lstlisting}
 
+\clearpage
+L'architecture Conversion\_clock principale de l'ADC, on d\'efinit les
+quantit\'es physiques Vin et Vdd pour les tensions d'alimentation et
+l'entr\'ee du signal \`a convertir. \textit{lin} et \textit{lalim} seront
+d\'efinies \`a 0 pour mod\'eliser l'alimentation et la clock comme sources de tensions
+id\'eaux.
+
 \begin{lstlisting}[language=VHDL, belowskip=-0.5 \baselineskip]
 architecture Conversion_clock of clockadc is
 
@@ -142,6 +152,8 @@ architecture Conversion_clock of clockadc is
 	quantity Vdd across lalim through alim to electrical_ref; -- Alim Vdd input
 
 	begin
+
+  -- Process core --
 
 		end process conversion;
 
@@ -151,6 +163,9 @@ architecture Conversion_clock of clockadc is
 end Conversion_clock;
 \end{lstlisting}
 
+Le coeur de l'architecture comporte un mod\`ele simplifier pour convertir un signal
+analogique d\'epassant une tension de seuil d\'efinie (\textit{Vdd}) vers un bit logique
+``1'', ``0'' sinon.
 \begin{lstlisting}[language=VHDL, belowskip=-0.5 \baselineskip]
 conversion:process(Vin'above(Vdd/2.0))
 
@@ -162,6 +177,8 @@ else
 end if;
 \end{lstlisting}
 
+La simulation d'un tel convertisseur nous remporte des valeurs digitals \`a partir de
+celles analogiques.
 
 \begin{figure}[!htb]
 \begin{center}
@@ -172,12 +189,19 @@ end if;
 
 \clearpage
 
+\subsubsection{Convertiseur Analogique-Num\'erique 6-bits}
+
+D\'efinition des bibiloth\`eques principaux :
 \begin{lstlisting}[language=VHDL, belowskip=-0.5 \baselineskip]
 library ieee, std;
 use ieee.std_logic_1164.all;
 use ieee.electrical_systems.all;
 \end{lstlisting}
 
+D\'efinition de l'entit\'e : L'architecture de l'ADC n\'ecessite un signal \textit{start} pour
+le d\'eclanchement de l'ADC, une horloge de candancement \textit{clck}, l'entr\'ee
+analogique \`a convertire \textit{ain}, le signal de la fin de conversion \textit{eoc}
+ainsi qu'un bus en $std\_ulogic\_vector$ qui nous rends les valeurs digitales.
 \begin{lstlisting}[language=VHDL, belowskip=-0.5 \baselineskip]
 entity nbitadc is
 	port (
@@ -190,6 +214,8 @@ entity nbitadc is
 end nbitadc;
 \end{lstlisting}
 
+La conversion de l'ADC se d\'eroule dans 2 \'etats diff\'erents \textit{initial, conversion} :
+ On d\'ebute par l'intitalisation des valeurs de l'ADS,
 \begin{lstlisting}[language=VHDL, belowskip=-0.5 \baselineskip]
 architecture Conversion_alpha of nbitadc is
 	constant delay:time:=1 ns; -- Conversion time, might be unnecessary
