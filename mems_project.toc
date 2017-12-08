@@ -2,10 +2,15 @@
 \contentsline {section}{\numberline {1}Introduction}{2}{section.1}
 \contentsline {section}{\numberline {2}Architecture G\'en\'erale de l'altim\`etre}{2}{section.2}
 \contentsline {section}{\numberline {3}Mod\'elisation et simulation des blocs}{2}{section.3}
-\contentsline {subsection}{\numberline {3.1}Transducteurs comme elements de test}{2}{subsection.3.1}
+\contentsline {subsection}{\numberline {3.1}Transducteurs comme \'elements de tests}{2}{subsection.3.1}
 \contentsline {subsection}{\numberline {3.2}Capteur de temp\'erature}{2}{subsection.3.2}
 \contentsline {subsection}{\numberline {3.3}Architecture de l'amplificateur diff\'erentiel}{2}{subsection.3.3}
-\contentsline {subsection}{\numberline {3.4}Convertisseur Analogique-Num\'erique en VHDL-AMS}{2}{subsection.3.4}
-\contentsline {subsection}{\numberline {3.5}Logique de commande}{2}{subsection.3.5}
-\contentsline {section}{\numberline {4}Conclusion}{3}{section.4}
-\contentsline {section}{R\'ef\'erences}{4}{section.4}
+\contentsline {subsection}{\numberline {3.4}Convertisseur Analogique-Num\'erique en VHDL-AMS}{3}{subsection.3.4}
+\contentsline {subsubsection}{\numberline {3.4.1}Convertiseur Analogique-Num\'erique 1-bit}{3}{subsubsection.3.4.1}
+\contentsline {subsection}{\numberline {3.5}Logique de commande}{7}{subsection.3.5}
+\contentsline {section}{\numberline {4}Conclusion}{8}{section.4}
+\contentsline {section}{\numberline {5}Annexes}{9}{section.5}
+\contentsline {subsection}{\numberline {5.1}Code complet des blocs VHDL-AMS}{9}{subsection.5.1}
+\contentsline {subsubsection}{\numberline {5.1.1}Convertisseur nbitsADC 6-bits }{9}{subsubsection.5.1.1}
+\contentsline {subsubsection}{\numberline {5.1.2}Convertiseur 1bit clockadc}{10}{subsubsection.5.1.2}
+\contentsline {section}{R\'ef\'erences}{11}{lstnumber.-9.34}

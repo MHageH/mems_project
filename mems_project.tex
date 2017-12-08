@@ -84,6 +84,17 @@
 \maketitle
 \thispagestyle{empty}
 
+\renewcommand{\abstractname}{Pr\'emabule}
+
+\begin{abstract}
+La conception des microsyst\`emes micro\'electrom\'ecaniques constitue une comp\'etance importante dans le domaine de la micro\'electronique :
+L'int\'egration continue des \'elements de micro-nano dimensions assure la r\'eduction de la taille des circuits mixtes micro\'electronique, qui
+peuvent comprendre une multitude de capteurs ainsi que la r\'ealisations des fonctions de plus en plus complexes. \\
+Le document pr\'esente les diff\'erentes m\'ethodologies suivies ainsi que les architectures des blocs fonctionels d\'ecrits en VHDL-AMS, ainsi
+que l'incorporation et la simulation de mod\`ele de capteur physique et les circuits de traitement. On finalise en effectuant une simulation compl\`ete
+du mod\`ele pour caract\'eriser ses performances vis-\`a-vis du cahier des charges.
+\end{abstract}
+
 \tableofcontents
 \clearpage
 
@@ -92,53 +103,166 @@
 \section{Architecture G\'en\'erale de l'altim\`etre}
 \section{Mod\'elisation et simulation des blocs}
 
-Test $\{ Verilog \}$
-\begin{lstlisting}[language=Verilog, belowskip=-0.5 \baselineskip]
-module thermo2bin (thermob, bin)
-input[62:0] thermob;
-output [5:0] bin;
+\subsection{Transducteurs comme \'elements de tests}
+\subsection{Capteur de temp\'erature}
+\subsection{Architecture de l'amplificateur diff\'erentiel}
 
-reg [62:0] thermo;
-reg [5:0] bin, bin1, bin2;
-integer i, j, k;
+\clearpage
+\subsection{Convertisseur Analogique-Num\'erique en VHDL-AMS}
 
-always @(thermob)
+\subsubsection{Convertiseur Analogique-Num\'erique 1-bit}
+
+\begin{figure}[!htb]
+\begin{center}
+  \includegraphics[scale=0.60]{Architecture-ADC-test.png}
+  \caption{Sch\'ema g\'en\'eral pour le test de l'ADC 6-bits }
+\end{center}
+\end{figure}
+
+\begin{lstlisting}[language=VHDL, belowskip=-0.5 \baselineskip]
+library ieee, std;
+use ieee.std_logic_1164.all;
+use ieee.electrical_systems.all;
+\end{lstlisting}
+
+\begin{lstlisting}[language=VHDL, belowskip=-0.5 \baselineskip]
+entity clockadc is
+	port (
+		terminal ain : electrical;  --Analog input terminal
+		terminal alim : electrical; --Alim input terminal
+		signal Digitalout : out std_ulogic -- Digital 1 bit output
+		);
+end clockadc;
+\end{lstlisting}
+
+\begin{lstlisting}[language=VHDL, belowskip=-0.5 \baselineskip]
+architecture Conversion_clock of clockadc is
+
+	quantity Vin across lin through ain to electrical_ref; -- ADC Analog input
+	quantity Vdd across lalim through alim to electrical_ref; -- Alim Vdd input
+
+	begin
+
+		end process conversion;
+
+	lin == 0.0; -- ideal input
+	lalim == 0.0; -- ideal input
+
+end Conversion_clock;
+\end{lstlisting}
+
+\begin{lstlisting}[language=VHDL, belowskip=-0.5 \baselineskip]
+conversion:process(Vin'above(Vdd/2.0))
+
 begin
-  for (k = 0; k <=60; k=k+1)
-    thermo[k] <= thermob[k] || thermob[k+1] || thermob[k+2];
-
-  thermo[61] <= thermob[61] || thermob[62];
-  thermo[62] <= thermob[62];
-end
-
-always @(thermo)
-begin
-  bin1 = 0;
-  for(i=1; i <= 32; i=i+1)
-    if (thermo[i-1] = 1'b1) bin1 = i;
-end
-
-always @(thermo)
-begin
-  bin2 = 0;
-  for(j=1; j<=31; j=j+1)
-    if(thermo[k+31] == 1'b1) bin2 = j;
-end
-
-always @(bin1 or bin2)
-if (thermo[31] == 1'b1)
-  bin = bin2 + 32;
+if Vin'above(Vdd/2.0) then
+  Digitalout<= '1';
 else
-  bin = bin1;
+  Digitalout<='0';
+end if;
+\end{lstlisting}
 
-endmodule
+
+\begin{figure}[!htb]
+\begin{center}
+  \includegraphics[scale=0.50]{1bit-ADC-conversion-sim.png}
+  \caption{Simulation de l'ADC 1-bit }
+\end{center}
+\end{figure}
+
+\clearpage
+
+\begin{lstlisting}[language=VHDL, belowskip=-0.5 \baselineskip]
+library ieee, std;
+use ieee.std_logic_1164.all;
+use ieee.electrical_systems.all;
+\end{lstlisting}
+
+\begin{lstlisting}[language=VHDL, belowskip=-0.5 \baselineskip]
+entity nbitadc is
+	port (
+		signal start: in std_ulogic; -- Start signal from the command logic
+		signal clk : in std_ulogic; --clock signal
+		terminal ain : electrical;  --Analog input terminal
+		signal eoc : out std_ulogic:='0'; -- End of conversion status, initialized on default and used by the command logic
+		signal Digitalout : out std_ulogic_vector(5 downto 0) -- Digital 6 bits output
+		);
+end nbitadc;
+\end{lstlisting}
+
+\begin{lstlisting}[language=VHDL, belowskip=-0.5 \baselineskip]
+architecture Conversion_alpha of nbitadc is
+	constant delay:time:=1 ns; -- Conversion time, might be unnecessary
+	type adcstates is (initial, conversion); -- Conversion status both initial and on time
+	constant bit_range:integer:=5; -- bit range for Digitalout
+	quantity Vin across lin through ain to electrical_ref; -- ADC Analog input
+	constant Vmax:real:=3.3;
+
+	begin
+		convertion_adc:process is
+			variable thresh:real:= Vmax;  -- Threshold to test the input voltage against
+			variable Vtmp:real; -- Temporary storage of Vin
+			variable digital_tmp : std_ulogic_vector(bit_range downto 0); -- Temporary digital output data
+			variable actual_status: adcstates:=initial; -- Begin the ADC states with the initial state
+			variable bit_cnt:integer:=bit_range;
+
+          -- Process core --
+
+      lin == 0.0; -- ideal input
+    end Conversion_alpha;
+\end{lstlisting}
+
+\begin{lstlisting}[caption={Coeur du process pour le convertisseur},captionpos=b,language=VHDL, belowskip=-0.5 \baselineskip]
+			begin
+			case actual_status is
+
+				when initial =>
+				wait on start until start='1' or start='H';
+					bit_cnt:=bit_range;
+					thresh := Vmax;
+					Vtmp := Vin;
+					eoc<='0';
+					actual_status:= conversion; -- Jump to conversion state
+
+				when conversion =>
+					wait on clk until clk='1' or clk='H';
+					thresh:= thresh/2.0; -- MSB value
+					if Vtmp > thresh then
+						digital_tmp(bit_cnt):= '1';
+						Vtmp := Vtmp - thresh;
+					else
+						digital_tmp(bit_cnt):='0';
+					end if;
+					if bit_cnt > 0 then
+						bit_cnt := bit_cnt -1;
+					else
+						Digitalout <= digital_tmp;
+						eoc <= '1' after delay; -- End of conversion after a delay
+						actual_status := initial;
+					end if;
+			end case;
+		end process convertion_adc;
 
 \end{lstlisting}
 
-\subsection{Transducteurs comme elements de test}
-\subsection{Capteur de temp\'erature}
-\subsection{Architecture de l'amplificateur diff\'erentiel}
-\subsection{Convertisseur Analogique-Num\'erique en VHDL-AMS}
+\clearpage
+
+\begin{figure}[!htb]
+\begin{center}
+  \includegraphics[width=0.7\linewidth]{Simulation-ADC-correct.png}
+  \caption{Simulation de totale de l'ADC }
+\end{center}
+\end{figure}
+
+\begin{figure}[!htb]
+\begin{center}
+  \includegraphics[width=0.7\linewidth]{Simulation-ADC-Bus-correct.png}
+  \caption{Simulation de l'ADC}
+\end{center}
+\end{figure}
+
+
+\clearpage
 \subsection{Logique de commande}
 
 
@@ -147,13 +271,132 @@ endmodule
 \section{Conclusion}
 
 \clearpage
+\section{Annexes}
+
+\subsection{Code complet des blocs VHDL-AMS}
+
+\subsubsection{Convertisseur nbitsADC 6-bits }
+
+\begin{lstlisting}[language=VHDL, belowskip=-0.5 \baselineskip]
+library ieee, std;
+use ieee.std_logic_1164.all;
+use ieee.electrical_systems.all;
+
+entity nbitadc is
+	port (
+		signal start: in std_ulogic; -- Start signal from the command logic
+		signal clk : in std_ulogic; --clock signal
+		terminal ain : electrical;  --Analog input terminal
+		signal eoc : out std_ulogic:='0'; -- End of conversion status, initialized on default and used by the command logic
+		signal Digitalout : out std_ulogic_vector(5 downto 0) -- Digital 6 bits output
+		);
+end nbitadc;
+
+architecture Conversion_alpha of nbitadc is
+	constant delay:time:=1 ns; -- Conversion time, might be unnecessary
+	type adcstates is (initial, conversion); -- Conversion status both initial and on time
+	constant bit_range:integer:=5; -- bit range for Digitalout
+	quantity Vin across lin through ain to electrical_ref; -- ADC Analog input
+	constant Vmax:real:=3.3;
+
+	begin
+		convertion_adc:process is
+			variable thresh:real:= Vmax;  -- Threshold to test the input voltage against
+			variable Vtmp:real; -- Temporary storage of Vin
+			variable digital_tmp : std_ulogic_vector(bit_range downto 0); -- Temporary digital output data
+			variable actual_status: adcstates:=initial; -- Begin the ADC states with the initial state
+			variable bit_cnt:integer:=bit_range;
+
+			begin
+			case actual_status is
+
+				when initial =>
+				wait on start until start='1' or start='H';
+					bit_cnt:=bit_range;
+					thresh := Vmax;
+					Vtmp := Vin;
+					eoc<='0';
+
+					actual_status:= conversion; -- Jump to conversion state
+
+				when conversion =>
+					wait on clk until clk='1' or clk='H';
+					thresh:= thresh/2.0; -- MSB value
+					if Vtmp > thresh then
+						digital_tmp(bit_cnt):= '1';
+						Vtmp := Vtmp - thresh;
+					else
+						digital_tmp(bit_cnt):='0';
+					end if;
+					if bit_cnt > 0 then
+						bit_cnt := bit_cnt -1;
+					else
+						Digitalout <= digital_tmp;
+						eoc <= '1' after delay; -- End of conversion after a delay
+						actual_status := initial;
+					end if;
+			end case;
+		end process convertion_adc;
+
+	lin == 0.0; -- ideal input
+	-- lalim == 0.0; --ideal power input
+
+end Conversion_alpha;
+\end{lstlisting}
+
+
+\subsubsection{Convertiseur 1bit clockadc}
+
+\begin{lstlisting}[language=VHDL, belowskip=-0.5 \baselineskip]
+library ieee, std;
+use ieee.std_logic_1164.all;
+use ieee.electrical_systems.all;
+
+entity clockadc is
+	port (
+		terminal ain : electrical;  --Analog input terminal
+		terminal alim : electrical; --Alim input terminal
+		signal Digitalout : out std_ulogic -- Digital 1 bit output
+		);
+end clockadc;
+
+architecture Conversion_clock of clockadc is
+
+	quantity Vin across lin through ain to electrical_ref; -- ADC Analog input
+	quantity Vdd across lalim through alim to electrical_ref; -- Alim Vdd input
+
+	begin
+
+			conversion:process(Vin'above(Vdd/2.0))
+
+			begin
+			if Vin'above(Vdd/2.0) then
+				Digitalout<= '1';
+			else
+				Digitalout<='0';
+			end if;
+
+		end process conversion;
+
+	lin == 0.0; -- ideal input
+	lalim == 0.0; -- ideal input
+
+end Conversion_clock;
+\end{lstlisting}
+
+
+
+\clearpage
+
+
+\clearpage
 \addcontentsline{toc}{section}{R\'ef\'erences}
 
 \begin{thebibliography}{9}
 
 \bibitem{sim-elec-cours}
-\textit{Simulation \'electromagn\'etique et techniques de mesure RF,}\\
-\texttt{Jean-Daniel Arnould, Institut Polytechnique de Grenoble - Phelma}
+\textit{The System Designers Guide to VHDL-AMS Analog, Mixed-Signal, and Mixed-Technology Modeling,}\\
+\texttt{Peter J. Ashenden, Gregory D. Peterson and Darrell A. Teegarden, Morgan Kaufmann Publishers Inc}
 
 \end{thebibliography}
 
