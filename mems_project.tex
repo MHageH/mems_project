@@ -1,0 +1,161 @@
+\documentclass[a4paper]{article}
+%\usepackage[T1]{fontenc}
+\usepackage[english]{babel}
+
+\usepackage{amsmath}
+\usepackage{amssymb,amsfonts,textcomp, graphicx}
+\usepackage{graphics}
+
+\usepackage{wrapfig}
+
+\usepackage{parskip}
+
+\usepackage{color}
+\usepackage{array}
+\usepackage{hhline}
+\usepackage{subcaption}
+
+\usepackage{textcomp}
+
+\usepackage[hidelinks]{hyperref}
+
+\setlength\tabcolsep{1mm}
+\renewcommand\arraystretch{1.3}
+
+\setlength\voffset{-1in}
+\setlength\hoffset{-1in}
+\setlength\topmargin{0.7874in}
+\setlength\oddsidemargin{0.7874in}
+\setlength\textheight{10.118099in}
+\setlength\textwidth{6.6932993in}
+\setlength\footskip{0.0cm}
+\setlength\headheight{0cm}
+\setlength\headsep{0cm}
+
+% Code specific
+
+\usepackage{listings}
+
+\definecolor{mygreen}{rgb}{0,0.6,0}
+\definecolor{mygray}{rgb}{0.5,0.5,0.5}
+\definecolor{mymauve}{rgb}{0.58,0,0.82}
+
+\lstset{ %
+  backgroundcolor=\color{white},   % choose the background color; you must add \usepackage{color} or \usepackage{xcolor}
+  basicstyle=\footnotesize,        % the size of the fonts that are used for the code
+  breakatwhitespace=false,         % sets if automatic breaks should only happen at whitespace
+  breaklines=true,                 % sets automatic line breaking
+  captionpos=b,                    % sets the caption-position to bottom
+  commentstyle=\color{mygreen},    % comment style
+  deletekeywords={...},            % if you want to delete keywords from the given language
+  escapeinside={\%*}{*)},          % if you want to add LaTeX within your code
+  extendedchars=true,              % lets you use non-ASCII characters; for 8-bits encodings only, does not work with UTF-8
+  frame=single,	                   % adds a frame around the code
+  keepspaces=true,                 % keeps spaces in text, useful for keeping indentation of code (possibly needs columns=flexible)
+  keywordstyle=\color{blue},       % keyword style
+  language=Octave,                 % the language of the code
+  otherkeywords={*,...},           % if you want to add more keywords to the set
+  numbers=left,                    % where to put the line-numbers; possible values are (none, left, right)
+  numbersep=5pt,                   % how far the line-numbers are from the code
+  numberstyle=\tiny\color{mygray}, % the style that is used for the line-numbers
+  rulecolor=\color{black},         % if not set, the frame-color may be changed on line-breaks within not-black text (e.g. comments (green here))
+  showspaces=false,                % show spaces everywhere adding particular underscores; it overrides 'showstringspaces'
+  showstringspaces=false,          % underline spaces within strings only
+  showtabs=false,                  % show tabs within strings adding particular underscores
+  stepnumber=2,                    % the step between two line-numbers. If it's 1, each line will be numbered
+  stringstyle=\color{mymauve},     % string literal style
+  tabsize=2,	                   % sets default tabsize to 2 spaces
+  title=\lstname                   % show the filename of files included with \lstinputlisting; also try caption instead of title
+}
+
+%
+
+
+\begin{document}
+
+\newcommand\textstyleEmphasis[1]{\textit{#1}}
+\renewcommand{\contentsname}{Table des mati\`eres}
+\renewcommand\refname{R\'ef\'erences}
+
+\renewcommand{\abstractname}{Pr\'eambule}
+\title{\textbf{Projet Conception de Microsyst\`emes \\ Altim\`etre int\'egr\'e en VHDL-AMS}}
+\author{Mohamed Hage Hassan \\ Cl\'ement Cheung}
+\date{8 Decembre 2017}
+\maketitle
+\thispagestyle{empty}
+
+\tableofcontents
+\clearpage
+
+\section{Introduction}
+
+\section{Architecture G\'en\'erale de l'altim\`etre}
+\section{Mod\'elisation et simulation des blocs}
+
+Test $\{ Verilog \}$
+\begin{lstlisting}[language=Verilog, belowskip=-0.5 \baselineskip]
+module thermo2bin (thermob, bin)
+input[62:0] thermob;
+output [5:0] bin;
+
+reg [62:0] thermo;
+reg [5:0] bin, bin1, bin2;
+integer i, j, k;
+
+always @(thermob)
+begin
+  for (k = 0; k <=60; k=k+1)
+    thermo[k] <= thermob[k] || thermob[k+1] || thermob[k+2];
+
+  thermo[61] <= thermob[61] || thermob[62];
+  thermo[62] <= thermob[62];
+end
+
+always @(thermo)
+begin
+  bin1 = 0;
+  for(i=1; i <= 32; i=i+1)
+    if (thermo[i-1] = 1'b1) bin1 = i;
+end
+
+always @(thermo)
+begin
+  bin2 = 0;
+  for(j=1; j<=31; j=j+1)
+    if(thermo[k+31] == 1'b1) bin2 = j;
+end
+
+always @(bin1 or bin2)
+if (thermo[31] == 1'b1)
+  bin = bin2 + 32;
+else
+  bin = bin1;
+
+endmodule
+
+\end{lstlisting}
+
+\subsection{Transducteurs comme elements de test}
+\subsection{Capteur de temp\'erature}
+\subsection{Architecture de l'amplificateur diff\'erentiel}
+\subsection{Convertisseur Analogique-Num\'erique en VHDL-AMS}
+\subsection{Logique de commande}
+
+
+\clearpage
+
+\section{Conclusion}
+
+\clearpage
+\addcontentsline{toc}{section}{R\'ef\'erences}
+
+\begin{thebibliography}{9}
+
+\bibitem{sim-elec-cours}
+\textit{Simulation \'electromagn\'etique et techniques de mesure RF,}\\
+\texttt{Jean-Daniel Arnould, Institut Polytechnique de Grenoble - Phelma}
+
+\end{thebibliography}
+
+
+\end{document}
